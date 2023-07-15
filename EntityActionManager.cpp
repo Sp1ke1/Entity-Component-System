@@ -4,12 +4,11 @@
 std::vector<EntityAction *> EntityActionManager::GetAllVisibleActions() const
 {
     std::vector <EntityAction*> Out;
-    for ( auto Object  : m_Objects )
+    for ( const auto & object : m_Objects  )
     {
-        auto EntityAction = static_cast <class EntityAction*> ( Object );
-        if ( EntityAction && EntityAction -> CanBeVisible() )
+        if ( object && object -> CanBeVisible()  )
         {
-            Out.push_back( EntityAction );
+            Out.push_back( object );
         }
     }
     return Out;

@@ -8,6 +8,6 @@ void EntityAction::SetIsVisible(bool IsVisible) {
     m_IsVisible = IsVisible;
 }
 
-EntityAction::EntityAction(Entity *Owner) : Object(Owner) {
+EntityAction::EntityAction(Entity<EntityAction> *Owner) : Object(Owner) {
 
 }

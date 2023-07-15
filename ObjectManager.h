@@ -1,20 +1,35 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
-
-
-class Object;
+template <typename ObjectType>
 class ObjectManager {
 
 public:
 
-    bool RegisterObject ( Object * object );
+    bool RegisterObject ( ObjectType * object )
+    {
+        if ( !object )
+            return false;
+        m_Objects . push_back ( object );
+        return true;
+    }
 
-    bool UnregisterObject ( Object * object );
+    bool UnregisterObject ( ObjectType * object )
+    {
+        if ( !object )
+            return false;
+
+        auto FoundObject = std::find ( m_Objects.begin(), m_Objects.end(), object );
+        if ( FoundObject == m_Objects.end() )
+            return false;
+        m_Objects.erase ( FoundObject );
+        return true;
+    }
 
 protected:
-    std::vector<Object*> m_Objects;
+    std::vector<ObjectType*> m_Objects;
 };
 
 

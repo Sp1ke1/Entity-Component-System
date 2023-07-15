@@ -1,9 +1,9 @@
 #pragma once
 #include "Object.h"
 
-class EntityAction : public Object {
+class EntityAction : public Object<EntityAction> {
 public:
-    explicit EntityAction ( Entity * Owner );
+    explicit EntityAction ( Entity<EntityAction> * Owner );
 
     virtual bool CanBeVisible() const;
 

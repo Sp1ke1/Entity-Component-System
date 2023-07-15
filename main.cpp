@@ -4,11 +4,12 @@
 #include "EntityActionManager.h"
 #include <cassert>
 
+
 int main()
 
 {
-    EntityActionManager * eam = new EntityActionManager();
-    Entity e1 ( 0, eam );
+
+    Entity<EntityAction> e1 ( 0 );
 
     EntityAction ea1 ( &e1 );
     EntityAction ea2 ( &e1 );
@@ -21,7 +22,7 @@ int main()
     ea3.SetIsVisible( true );
     ea4.SetIsVisible( true );
 
-    EntityActionManager & ObjectManager = static_cast <EntityActionManager&> ( e1.GetObjectManager() );
+    auto & ObjectManager = static_cast <EntityActionManager&> ( e1.GetObjectManager() );
     auto VisibleObjects = ObjectManager . GetAllVisibleActions();
     assert ( VisibleObjects.size() == 3 );
 
