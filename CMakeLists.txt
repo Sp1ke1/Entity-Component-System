@@ -3,4 +3,26 @@ project(ECS_Test)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ECS_Test main.cpp EntityActionManager.h EntityAction.h EntityActionManager.cpp Entity.h EntityAction.cpp)
+include_directories( ${PROJECT_SOURCE_DIR} )
+include_directories( ${PROJECT_SOURCE_DIR}/ecs )
+include_directories(${PROJECT_SOURCE_DIR}/PackedArray)
+include_directories( ${PROJECT_SOURCE_DIR}/)
+
+set ( ECS_SOURCE ecs/ComponentManager.h ecs/ComponentManager.cpp
+                 ecs/ECSManager.h ecs/ECSManager.cpp
+                 ecs/Entity.h ecs/Entity.cpp
+                 ecs/EntityManager.h ecs/EntityManager.cpp
+                 ecs/ExampleComponents.h
+                 ecs/System.h ecs/System.cpp
+                 ecs/SystemManager.h ecs/SystemManager.cpp
+                 ecs/ObjectManager.h
+        ecs/Types.h)
+
+set ( CONTAINER_SOURCE PackedArray/PackedArray.h PackedArray/PackedArray.cpp PackedArray/PackedComponentArray.cpp PackedArray/PackedComponentArray.h)
+
+set ( TEST_SOURCE EntityAction.h EntityAction.cpp
+                  EntityActionManager.h EntityActionManager.cpp
+                  main.cpp
+                  Object.h )
+
+add_executable( ECS_TEST ${ECS_SOURCE} ${CONTAINER_SOURCE} ${TEST_SOURCE} )

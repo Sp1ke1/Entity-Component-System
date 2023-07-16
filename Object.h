@@ -1,49 +1,22 @@
 #pragma once
+#include "Types.h"
 
-#include "Entity.h"
-
-#ifdef ECS_EXCEPTIONS
-#include "stdexcept"
-#endif
-
-template <typename Derived>
 class Object {
 public:
 
-    // CRTP
-    explicit Object ( Entity<Derived> * Owner )
-    : m_Owner ( Owner )
+    explicit Object ( EntityHandle owner ) : m_Owner ( owner )
+    {};
+
+    EntityHandle GetOwner () const
     {
-        if ( !m_Owner )
-        {
-            #ifdef ECS_EXCEPTIONS
-            throw std::invalid_argument ("Creating object with invalid Entity owner");
-            #endif
-            return;
-        }
-        m_Owner -> GetObjectManager().RegisterObject( static_cast <Derived*> ( this ) );
+        return m_Owner;
     }
 
-    Object () = delete;
-
-    ~Object ()
+    void SetOwner ( EntityHandle entity )
     {
-        if ( m_Owner )
-        {
-            m_Owner -> GetObjectManager().UnregisterObject( static_cast<Derived*> ( this ) );
-            m_Owner = nullptr;
-        }
-    }
-
-    void OnRemoved ()
-    {
-        if ( m_Owner )
-        {
-            m_Owner -> GetObjectManager().UnregisterObject( static_cast <Derived*> ( this ) );
-            m_Owner = nullptr;
-        }
+        m_Owner = entity;
     }
 
 private:
-    Entity<Derived> * m_Owner;
+    EntityHandle m_Owner;
 };

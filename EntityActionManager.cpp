@@ -1,10 +1,11 @@
 #include "EntityActionManager.h"
 
+/*
 
-std::vector<EntityAction *> EntityActionManager::GetAllVisibleActions() const
+std::vector <ObjectHandle>  EntityActionManager::GetAllVisibleActions()
 {
     std::vector <EntityAction*> Out;
-    for ( const auto & object : m_Objects  )
+    for ( const auto It = m_Objects.begin(); It != m_Objects.end() ++ It  )
     {
         if ( object && object -> CanBeVisible()  )
         {
@@ -13,3 +14,4 @@ std::vector<EntityAction *> EntityActionManager::GetAllVisibleActions() const
     }
     return Out;
 }
+*/
