@@ -1,24 +1,36 @@
 
 struct Vector
 {
-    float x = 0.f;
-    float y = 0.f;
-    float z = 0.f;
+    Vector ( float x, float y, float z )
+    : X ( x ), Y ( x ), Z ( z )
+    {};
+    float X = 0.f;
+    float Y = 0.f;
+    float Z = 0.f;
 };
 
-class LocationComponent
+struct LocationComponent
 {
+    LocationComponent ( Vector location )
+    : Location ( location )
+    {};
     Vector Location;
 };
 
-class MovementComponent
+struct MovementComponent
 {
+    MovementComponent ( float speed, Vector direction )
+    : Speed ( speed ), Direction( direction )
+    {};
     float Speed = 0.f;
     Vector Direction;
 };
 
-class HPComponent
+struct HPComponent
 {
+    HPComponent ( int maxHp, int currentHp )
+    : MaxHP ( maxHp ), CurrentHP ( currentHp )
+    {};
     int MaxHP = 100;
     int CurrentHP = 100;
 };

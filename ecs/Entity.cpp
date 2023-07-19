@@ -1,10 +1,10 @@
 #include "Entity.h"
 
 
-Entity::Entity ( EntityIdType id )
-: m_ID ( id ) {}
+Entity::Entity ( EntityHandle id )
+: m_Id ( id ) {}
 
-const EntityIdType Entity::GetId () const
+const EntityHandle Entity::GetId () const
 {
-    return m_ID;
+    return m_Id;
 }

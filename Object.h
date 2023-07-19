@@ -1,10 +1,10 @@
 #pragma once
 #include "Types.h"
 
-class Object {
+class ObjectComponent {
 public:
 
-    explicit Object ( EntityHandle owner ) : m_Owner ( owner )
+    explicit ObjectComponent ( EntityHandle owner ) : m_Owner ( owner )
     {};
 
     EntityHandle GetOwner () const

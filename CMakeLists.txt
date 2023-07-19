@@ -16,13 +16,13 @@ set ( ECS_SOURCE ecs/ComponentManager.h ecs/ComponentManager.cpp
                  ecs/System.h ecs/System.cpp
                  ecs/SystemManager.h ecs/SystemManager.cpp
                  ecs/ObjectManager.h
-        ecs/Types.h)
+        ecs/Types.h ecs/Component.cpp ecs/Component.h)
 
-set ( CONTAINER_SOURCE PackedArray/PackedArray.h PackedArray/PackedArray.cpp PackedArray/PackedComponentArray.cpp PackedArray/PackedComponentArray.h)
+set ( CONTAINER_SOURCE PackedArray/PackedArray.h PackedArray/PackedArray.cpp)
 
 set ( TEST_SOURCE EntityAction.h EntityAction.cpp
                   EntityActionManager.h EntityActionManager.cpp
                   main.cpp
-                  Object.h )
+                  Object.h ecs/Component.cpp ecs/Component.h)
 
 add_executable( ECS_TEST ${ECS_SOURCE} ${CONTAINER_SOURCE} ${TEST_SOURCE} )

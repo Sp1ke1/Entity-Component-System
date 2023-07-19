@@ -3,40 +3,76 @@
 #include "PackedArray.h"
 #include "Types.h"
 
+
+
+class IObjectManager
+{
+public:
+    virtual ~IObjectManager() = default;
+    virtual bool RemoveObjectChecked (ObjectHandle handle ) = 0;
+    virtual void RemoveObject ( ObjectHandle handle ) = 0;
+    virtual void Clear () = 0;
+};
+
 template <typename ObjectType>
-class ObjectManager {
+class ObjectManager : public IObjectManager {
 
 public:
 
     template <typename ... Args>
-    ObjectHandle CreateObject ( Args && ... )
+    ObjectHandle CreateObject ( HandleInjectionMethod injectionMethod = NoInjection, Args && ... Arguments )
     {
-        ObjectType obj ( Args ... );
-        return m_Objects . Add ( std::move ( obj ) );
+        return m_Objects . EmplaceBack ( injectionMethod, std::forward <Args> ( Arguments ) ... );
     }
 
-    bool GetObject ( ObjectHandle handle, ObjectType & out ) const
+    ObjectHandle AddObject ( const ObjectType & object )
     {
-        return m_Objects.Get ( handle, out );
+        return m_Objects.Add ( object );
     }
 
-    bool RemoveObject ( ObjectHandle handle )
+    ObjectHandle AddObject ( const ObjectType && object )
     {
-        return m_Objects.Remove( handle );
+        return m_Objects.Add ( object );
     }
 
-    template <typename MethodName, typename ... Args>
-    void CallObjectsMethod( Args && ... MethodArguments ) const
+    ObjectType & GetObject ( ObjectHandle handle )
     {
-        for ( auto It = m_Objects.begin(); It != m_Objects.end(); ++It )
-        {
-            It -> template MethodName ( std::forward <Args> ( MethodArguments ) ... );
-        }
+        return m_Objects.Get ( handle );
     }
 
-    void Clear ()
+    std::optional<std::reference_wrapper<ObjectType>> GetObjectChecked (ObjectHandle handle )
+    {
+        return m_Objects.GetChecked(handle);
+    }
+
+    bool RemoveObjectChecked (ObjectHandle handle ) override
+    {
+        return m_Objects.RemoveChecked(handle);
+    }
+
+    void RemoveObject ( ObjectHandle handle ) override
+    {
+        return m_Objects.Remove ( handle );
+    }
+
+    bool GetIsValidHandle ( ObjectHandle handle ) const
+    {
+        return m_Objects.IsValidHandle( handle  );
+    }
+
+    void Clear () override
     {
         m_Objects.Clear();
+    }
+
+    typename std::vector<ObjectType>::iterator begin()
+    {
+        return m_Objects.begin();
+    }
+
+    typename std::vector<ObjectType>::iterator end()
+    {
+        return m_Objects.end();
     }
 
 protected:

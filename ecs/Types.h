@@ -1,6 +1,22 @@
-#include "cstdint"
+#pragma once
 
-using ObjectHandle = std::size_t;
-using EntityHandle = ObjectHandle;
-using SystemHandle = ObjectHandle;
-using ComponentHandle = ObjectHandle;
+#include "cstdint"
+#include <optional> // optional
+#include <memory> // reference wrapper
+
+typedef  std::size_t ObjectHandle;
+typedef ObjectHandle EntityHandle;
+typedef ObjectHandle SystemHandle;
+typedef ObjectHandle ComponentHandle;
+typedef std::size_t ComponentType;
+typedef std::size_t SystemType;
+
+struct ComponentInfo
+{
+    ComponentType Type;
+    ComponentHandle Handle;
+
+    bool operator < ( const ComponentInfo & rhs ) const { return Type < rhs.Type; };
+    bool operator == ( const ComponentInfo & rhs ) const { return Type == rhs.Type; };
+};
+

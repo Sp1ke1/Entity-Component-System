@@ -1,7 +1,7 @@
 #pragma once
 #include "Object.h"
 
-class EntityAction : public Object {
+class EntityAction : public ObjectComponent {
 public:
 
 
