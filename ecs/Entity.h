@@ -1,6 +1,7 @@
 #pragma once
-#include "Types.h"
-#include <set>
+#include "ECSInclude.h"
+
+using Signature = std::set<ComponentType>;
 
 class Entity {
 
@@ -10,7 +11,7 @@ public:
 
     Entity () = default;
 
-    const EntityHandle GetId () const;
+    const EntityHandle GetHandle () const;
 
     void AddComponent ( ComponentInfo type )
     {
@@ -19,11 +20,7 @@ public:
 
     void RemoveComponent ( ComponentType type )
     {
-        auto Found = m_Components . find ( { type, 0 } );
-        if ( Found != m_Components . end() )
-        {
-            m_Components . erase ( Found );
-        }
+        m_Components.erase ( { type, 0 } );
     }
 
     bool GetHasComponent ( ComponentType type ) const
@@ -49,10 +46,20 @@ public:
         return m_Components;
     }
 
+    Signature GetSignature () const
+    {
+        Signature out;
+        for ( const auto & elem : m_Components )
+        {
+            out . insert ( elem.Type );
+        }
+        return out;
+    }
+
 
 
 private:
-    EntityHandle m_Id;
+    EntityHandle m_Handle;
     std::set <ComponentInfo> m_Components;
 };
 

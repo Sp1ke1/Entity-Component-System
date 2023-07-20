@@ -1,8 +1,6 @@
 #pragma once
 
 #include "cstdint"
-#include <optional> // optional
-#include <memory> // reference wrapper
 
 typedef  std::size_t ObjectHandle;
 typedef ObjectHandle EntityHandle;
@@ -10,6 +8,7 @@ typedef ObjectHandle SystemHandle;
 typedef ObjectHandle ComponentHandle;
 typedef std::size_t ComponentType;
 typedef std::size_t SystemType;
+
 
 struct ComponentInfo
 {

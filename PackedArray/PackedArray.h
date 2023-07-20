@@ -1,10 +1,6 @@
 #pragma once
+#include "ECSInclude.h" // TODO: solve includes problem. Refactor all includes
 
-#include <vector>
-#include <unordered_map>
-#include <set>
-#include <optional>
-#include <memory> // For checked get
 using PackedArrayHandle = std::size_t;
 
 enum HandleInjectionMethod

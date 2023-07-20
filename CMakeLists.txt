@@ -9,20 +9,20 @@ include_directories(${PROJECT_SOURCE_DIR}/PackedArray)
 include_directories( ${PROJECT_SOURCE_DIR}/)
 
 set ( ECS_SOURCE ecs/ComponentManager.h ecs/ComponentManager.cpp
-                 ecs/ECSManager.h ecs/ECSManager.cpp
+        ecs/ECS.h ecs/ECS.cpp
                  ecs/Entity.h ecs/Entity.cpp
                  ecs/EntityManager.h ecs/EntityManager.cpp
                  ecs/ExampleComponents.h
                  ecs/System.h ecs/System.cpp
                  ecs/SystemManager.h ecs/SystemManager.cpp
                  ecs/ObjectManager.h
-        ecs/Types.h ecs/Component.cpp ecs/Component.h)
+        ecs/Types.h ecs/Component.cpp ecs/Component.h ecs/ECSInclude.h)
 
 set ( CONTAINER_SOURCE PackedArray/PackedArray.h PackedArray/PackedArray.cpp)
 
 set ( TEST_SOURCE EntityAction.h EntityAction.cpp
                   EntityActionManager.h EntityActionManager.cpp
                   main.cpp
-                  Object.h ecs/Component.cpp ecs/Component.h)
+                  Object.h ecs/Component.cpp ecs/Component.h ecs/ECSInclude.h)
 
 add_executable( ECS_TEST ${ECS_SOURCE} ${CONTAINER_SOURCE} ${TEST_SOURCE} )

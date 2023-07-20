@@ -2,9 +2,9 @@
 
 
 Entity::Entity ( EntityHandle id )
-: m_Id ( id ) {}
+: m_Handle (id ) {}
 
-const EntityHandle Entity::GetId () const
+const EntityHandle Entity::GetHandle () const
 {
-    return m_Id;
+    return m_Handle;
 }

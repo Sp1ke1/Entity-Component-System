@@ -1,5 +1,5 @@
 #include <iostream>
-#include "ECSManager.h"
+#include "ECS.h"
 #include "ExampleComponents.h"
 #include <cassert>
 
@@ -43,7 +43,7 @@ void TestPackedArray ()
 
 void TestECS()
 {
-    ECSManager ecs;
+    ECS ecs;
 
     auto e1 = ecs.CreateEntity();
     auto e2 = ecs.CreateEntity();

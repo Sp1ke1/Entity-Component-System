@@ -1,6 +1,5 @@
 #include "ObjectManager.h"
 #include "Entity.h"
-#include <functional>
 
 class EntityManager  {
 

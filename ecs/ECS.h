@@ -2,7 +2,7 @@
 #include "ComponentManager.h"
 #include "SystemManager.h"
 
-class ECSManager {
+class ECS {
 
 public:
 
@@ -15,6 +15,7 @@ public:
     {
         Entity & e = m_EntityManager.GetEntity( entityHandle );
         m_ComponentManager .OnEntityRemoved( e );
+        m_SystemManager . OnEntityRemoved( e );
         return m_EntityManager.RemoveEntityChecked( entityHandle );
     }
 
@@ -27,21 +28,27 @@ public:
     bool AddComponent ( EntityHandle entityHandle, const ComponentType && component )
     {
         Entity & e = GetEntity( entityHandle );
-        return m_ComponentManager.AddComponent ( e, component );
+        if ( !m_ComponentManager.AddComponent ( e, component ) )
+            return false;
+        m_SystemManager.OnEntitySignatureChanged( e, e.GetSignature() );
     }
 
     template <typename ComponentType>
     bool AddComponent ( EntityHandle entityHandle, const ComponentType & component )
     {
         Entity & e = GetEntity( entityHandle );
-        return m_ComponentManager.AddComponent ( e, component );
+        if ( !m_ComponentManager.AddComponent ( e, component ) )
+            return false;
+        m_SystemManager.OnEntitySignatureChanged( e, e.GetSignature() );
     }
 
     template <typename ComponentType>
     bool RemoveComponent ( EntityHandle entityHandle )
     {
         Entity & e = GetEntity( entityHandle );
-        return m_ComponentManager.RemoveComponent<ComponentType> ( e );
+        if ( ! m_ComponentManager.RemoveComponent<ComponentType> ( e ) )
+            return false;
+        m_SystemManager.OnEntitySignatureChanged( e, e.GetSignature() );
     }
 
     template<typename ComponentType>
@@ -61,9 +68,28 @@ public:
     {
         return m_ComponentManager.RegisterComponent<ComponentType>();
     }
+
+    template <typename System, typename ... ComponentTypes>
+    bool RegisterSystem ()
+    {
+        return m_SystemManager . RegisterSystem<System>( std::move ( GetComponentsSignature <ComponentTypes> () ... ) );
+    }
+
+    template <typename ... ComponentTypes>
+    std::set<ComponentType> GetComponentsSignature ()
+    {
+        return { m_ComponentManager.GetComponentType<ComponentTypes>() ... };
+    }
+
+    template <typename System>
+    void RunSystem ()
+    {
+        m_SystemManager.RunSystem<System>( this );
+    }
 private:
 
     ComponentManager m_ComponentManager;
     EntityManager m_EntityManager;
     SystemManager m_SystemManager;
+
 };

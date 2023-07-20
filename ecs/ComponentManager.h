@@ -1,9 +1,7 @@
+#pragma once
+
 #include "ObjectManager.h"
 #include "Entity.h"
-#include <unordered_map>
-#include <memory>
-
-#include <iostream>
 
 // Reference: https://austinmorlan.com/posts/entity_component_system/#the-component-array
 
@@ -102,7 +100,7 @@ private:
 
 
 
-    std::unordered_map <ComponentType, std::shared_ptr<IObjectManager>> m_Components;
+    std::unordered_map <ComponentType, std::shared_ptr<IObjectManager>> m_Components; // TODO: remove m_RegisteredTypes and use just hash value instead
     std::unordered_map <ComponentType, ComponentType> m_RegisteredTypes;
     ComponentType  m_RegisteredComponentCounter = 0;
 
