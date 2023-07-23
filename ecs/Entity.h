@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ECSInclude.h"
 
 using Signature = std::set<ComponentType>;
@@ -7,59 +8,54 @@ class Entity {
 
 public:
 
-    explicit Entity ( EntityHandle id );
+    explicit Entity(EntityHandle id)
+            : m_Handle(id) {};
 
-    Entity () = default;
+    // --- Begin entity interface
 
-    const EntityHandle GetHandle () const;
-
-    void AddComponent ( ComponentInfo type )
-    {
-        m_Components.insert ( type );
+    const EntityHandle GetHandle() const {
+        return m_Handle;
     }
 
-    void RemoveComponent ( ComponentType type )
-    {
-        m_Components.erase ( { type, 0 } );
+    void AddComponent(ComponentInfo type) {
+        m_Components.insert(type);
     }
 
-    bool GetHasComponent ( ComponentType type ) const
-    {
-        return m_Components.count ( { type, 0 } ) != 0;
+    void RemoveComponent(ComponentType type) {
+        m_Components.erase({type, 0});
     }
 
-    ComponentHandle GetComponentHandle ( ComponentType type ) const
-    {
-        return m_Components . find ( { type, 0 } ) -> Handle;
+    bool GetHasComponent(ComponentType type) const {
+        return m_Components.count({type, 0}) != 0;
     }
 
-    bool GetComponentHandleChecked ( ComponentType type, ComponentHandle & out ) const
-    {
-        auto Found = m_Components . find ( { type, 0 } );
-        if ( Found == m_Components . end() )
-            return false;
-        return Found -> Handle;
+    ComponentHandle GetComponentHandle(ComponentType type) const {
+        return m_Components.find({type, 0})->Handle;
     }
 
-    const std::set<ComponentInfo> & GetComponentsInfo () const
-    {
+    const std::set<ComponentInfo> &GetComponentsInfo() const {
         return m_Components;
     }
 
-    Signature GetSignature () const
-    {
+    Signature GetSignature() const {
         Signature out;
-        for ( const auto & elem : m_Components )
-        {
-            out . insert ( elem.Type );
+        for (const auto &elem: m_Components) {
+            out.insert(elem.Type);
         }
         return out;
     }
+    // --- End entity interface
 
-
+    // --- Begin entity safe interface
+    std::optional<ComponentHandle> GetComponentHandleChecked(ComponentType type) const {
+        if (!GetHasComponent(type))
+            return std::nullopt;
+        return GetComponentHandle(type);
+    }
+    // --- End entity safe interface
 
 private:
     EntityHandle m_Handle;
-    std::set <ComponentInfo> m_Components;
+    std::set<ComponentInfo> m_Components;
 };
 

@@ -5,103 +5,165 @@
 
 // Reference: https://austinmorlan.com/posts/entity_component_system/#the-component-array
 
-class ComponentManager  {
+class ComponentManager
+{
 
 public:
-    template <typename T>
-    bool RegisterComponent ()
-    {
-        auto ComponentType = typeid ( T ).hash_code();
-        if ( m_RegisteredTypes . count ( ComponentType ) != 0 )
-            return false;
-        m_RegisteredTypes [ ComponentType ] = m_RegisteredComponentCounter;
-        m_Components [ m_RegisteredComponentCounter ] = std::make_shared <ObjectManager<T>> ();
-        m_RegisteredComponentCounter++;
-        return true;
-    }
 
-    template <typename T>
-    bool AddComponent ( Entity & entity, const T & component ) // TODO: make checks if entity already has component
-    {
-        const auto ComponentHandle =  GetComponentArray<T>() -> AddObject ( component );
-        entity .AddComponent( { GetComponentType<T>(), ComponentHandle } );
-        return true;
-    }
+	/* Begin ComponentManager interface */
+	template <typename T>
+	void RegisterComponent ()
+	{
+		const auto ComponentType = GetComponentType <T> ();
+		m_Components[ ComponentType ] = std::make_shared <ObjectManager <T>> ();
+	}
 
-    template <typename T>
-    bool RemoveComponent ( Entity & entity )
-    {
-        const auto ComponentType = GetComponentType<T>();
-        const auto ComponentHandle = entity.GetComponentHandle( ComponentType );
+	template <typename T>
+	void AddComponent ( Entity & entity, const T & component )
+	{
+		const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( component );
+		entity . AddComponent ( { GetComponentType <T> (), ComponentHandle } );
+	}
 
-        auto ComponentArray = GetComponentArray<T>();
+	template <typename T>
+	void AddComponent ( Entity & entity, T && component )
+	{
+		const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( std::forward <T> ( component ) );
+		entity . AddComponent ( { GetComponentType <T> (), ComponentHandle } );
+	}
 
-        if ( !ComponentArray -> RemoveObjectChecked ( ComponentHandle ) )
-            return false;
+	template <typename T>
+	void RemoveComponent ( Entity & entity )
+	{
+		const auto ComponentType = GetComponentType <T> ();
+		const auto ComponentHandle = entity . GetComponentHandle ( ComponentType );
 
-        entity . RemoveComponent ( ComponentType );
-        return true;
-    }
+		auto ComponentArray = GetComponentArray <T> ();
 
-    template <typename T>
-    T & GetComponent ( Entity & entity )
-    {
-        const auto ComponentHandle =  entity.GetComponentHandle(GetComponentType<T>());
-        auto ComponentArray = GetComponentArray<T>();
-        return ComponentArray -> GetObject ( ComponentHandle );
-    }
+		ComponentArray -> RemoveObject ( ComponentHandle );
+		entity . RemoveComponent ( ComponentType );
+	}
 
-    template <typename T>
-    std::optional<std::reference_wrapper<T>> GetChecked ( Entity & entity )
-    {
-        // TODO: blows if component isn't registered
-        ComponentHandle handle;
-        if ( !entity.GetComponentHandle (GetComponentType<T>()) )
-            return std::nullopt;
-        return GetComponentArray<T>() -> GetObjectChecked ( handle );
-    }
+	template <typename T>
+	T & GetComponent ( Entity & entity )
+	{
+		const auto ComponentHandle = entity . GetComponentHandle ( GetComponentType <T> () );
+		auto ComponentArray = GetComponentArray <T> ();
+		return ComponentArray -> GetObject ( ComponentHandle );
+	}
 
-    void OnEntityRemoved ( Entity & entity )
-    {
-        const auto & ComponentInfo = entity.GetComponentsInfo();
-        for ( const auto & info : ComponentInfo )
-        {
-            m_Components . at ( info.Type )->RemoveObjectChecked( info.Handle );
-        }
-    }
+	void OnEntityRemoved ( Entity & entity )
+	{
+		const auto & ComponentInfo = entity . GetComponentsInfo ();
+		for ( const auto & info : ComponentInfo ) {
+			m_Components . at ( info . Type ) -> RemoveObjectChecked ( info . Handle );
+		}
+	}
 
-    template <typename T>
-    ComponentType GetComponentType () const
-    {
-        const auto ComponentType = typeid ( T ).hash_code();
-        return m_RegisteredTypes . at ( ComponentType );
-    }
+	template <typename T>
+	ComponentType GetComponentType () const
+	{
+		return typeid ( T ) . hash_code ();
+	}
 
-    template <typename T>
-    std::weak_ptr <ObjectManager<T>> GetComponentsByType ()
-    {
-        return GetComponentArray<T>();
-    }
+	template <typename T>
+	std::weak_ptr <ObjectManager <T>> GetComponentsByType ()
+	{
+		return GetIsComponentRegistered <T> () ? GetComponentArray <T> () : nullptr;
+	}
 
+	template <typename T>
+	bool GetIsComponentRegistered () const
+	{
+		const auto ComponentType = GetComponentType <T> ();
+		return GetIsComponentRegistered ( ComponentType );
+	}
+
+	bool GetIsComponentRegistered ( ComponentType componentType ) const
+	{
+		return m_Components . count ( componentType ) != 0;
+	}
+	/* End ComponentManager interface */
+
+	/* Begin ComponentManager safe interface */
+	template <typename T>
+	bool RegisterComponentChecked ()
+	{
+		const auto ComponentType = GetComponentType <T> ();
+		if ( m_Components . count ( ComponentType ) == 0 )
+			return false;
+		m_Components[ ComponentType ] = std::make_shared <ObjectManager <T>> ();
+		return true;
+	}
+
+	template <typename T>
+	bool AddComponentChecked ( Entity & entity, const T & component )
+	{
+		if ( ! GetIsComponentRegistered <T> () )
+			return false;
+		const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( component );
+		entity . AddComponent ( { GetComponentType <T> (), ComponentHandle } );
+		return true;
+	}
+
+	template <typename T>
+	bool AddComponentChecked ( Entity & entity, T && component )
+	{
+		if ( ! GetIsComponentRegistered <T> () )
+			return false;
+		const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( std::forward <T> ( component ) );
+		entity . AddComponent ( { GetComponentType <T> (), ComponentHandle } );
+		return true;
+	}
+
+	template <typename T>
+	bool RemoveComponentChecked ( Entity & entity )
+	{
+		if ( ! GetIsComponentRegistered <T> () )
+			return false;
+
+		const auto ComponentType = GetComponentType <T> ();
+		if ( ! entity . GetHasComponent ( ComponentType ) )
+			return false;
+
+		const auto ComponentHandle = entity . GetComponentHandle ( ComponentType );
+		const auto ComponentArray = GetComponentArray <T> ();
+		if ( ! ComponentArray -> RemoveObjectChecked ( ComponentHandle ) )
+			return false;
+		entity . RemoveComponent ( ComponentType );
+		return true;
+	}
+
+	template <typename T>
+	std::optional <std::reference_wrapper <T>> GetComponentChecked ( Entity & entity )
+	{
+		if ( ! GetIsComponentRegistered <T> () )
+			return std::nullopt;
+
+		const auto ComponentType = GetComponentType <T> ();
+		if ( ! entity . GetHasComponent ( ComponentType ) )
+			return std::nullopt;
+
+		const auto handle = entity . GetComponentHandle ( ComponentType );
+		const auto ComponentArray = GetComponentArray <T> ();
+		return ComponentArray -> GetObjectChecked ( handle );
+	}
+	/* End ComponentManager safe interface */
 private:
-    template <typename T>
-    std::shared_ptr<ObjectManager<T>> GetComponentArray ()
-    {
-        const auto RegisteredComponentType = GetComponentType<T>();
-        return GetComponentArray<T> ( RegisteredComponentType );
-    }
 
-    template <typename T>
-    std::shared_ptr<ObjectManager<T>> GetComponentArray ( ComponentType componentType )
-    {
-        auto Interface = m_Components . at ( componentType );
-        return std::static_pointer_cast<ObjectManager<T>> ( Interface );
-    }
+	template <typename T>
+	std::shared_ptr <ObjectManager <T>> GetComponentArray ()
+	{
+		const auto ComponentType = GetComponentType <T> ();
+		return GetComponentArray <T> ( ComponentType );
+	}
 
+	template <typename T>
+	std::shared_ptr <ObjectManager <T>> GetComponentArray ( ComponentType componentType )
+	{
+		auto Interface = m_Components . at ( componentType );
+		return std::static_pointer_cast <ObjectManager <T>> ( Interface );
+	}
 
-
-    std::unordered_map <ComponentType, std::shared_ptr<IObjectManager>> m_Components; // TODO: remove m_RegisteredTypes and use just hash value instead
-    std::unordered_map <ComponentType, ComponentType> m_RegisteredTypes;
-    ComponentType  m_RegisteredComponentCounter = 0;
-
+	std::unordered_map <ComponentType, std::shared_ptr <IObjectManager>> m_Components;
 };

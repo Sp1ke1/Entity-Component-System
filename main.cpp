@@ -1,7 +1,10 @@
 #include <iostream>
 #include "ECS.h"
-#include "ExampleComponents.h"
+#include "Systems/ExampleSystems.h"
+#include "Components/ExampleComponents.h"
 #include <cassert>
+#include <chrono>
+#include <random>
 
 
 void TestPackedArray ()
@@ -40,47 +43,112 @@ void TestPackedArray ()
     assert ( !data.GetChecked(id5 ) );
 
 }
-
-void TestECS()
+void TestECSRegistrations ( ECS & ecs )
 {
-    ECS ecs;
-
-    auto e1 = ecs.CreateEntity();
-    auto e2 = ecs.CreateEntity();
-
-    assert ( ecs.RegisterComponent<LocationComponent>());
+    // Register components
+/*    assert ( ecs.RegisterComponent<LocationComponent>());
     assert ( ecs.RegisterComponent<MovementComponent>());
+    assert ( ecs.RegisterComponent<DamageComponent>());
     assert ( ecs.RegisterComponent<HPComponent>());
+    assert ( !ecs.RegisterComponent<HPComponent>() );*/
 
-    Vector loc1 { 1.0f, 1.0f, 0.0f };
-    Vector loc2 { 10.0f, 10.0f, -10.f };
-    Vector loc3 { 5.0f, -5.0f, 10.0f };
-    assert ( ecs.AddComponent ( e1, LocationComponent ( { 0.0f, 1.0f, 2.0f } )));
+    ecs.RegisterComponent<LocationComponent>();
+    ecs.RegisterComponent<MovementComponent>();
+    ecs.RegisterComponent<DamageComponent>();
+    ecs.RegisterComponent<HPComponent>();
 
-    auto & Comp = ecs.GetComponent<LocationComponent> ( e1 );
-    Comp.Location.X = 10.f;
-    auto & CompUpd = ecs.GetComponent<LocationComponent>( e1 );
-    assert ( CompUpd.Location.X  == 10.f );
+    // Register systems
+    bool Registered = ecs.RegisterSystemChecked <MovementSystem, LocationComponent, MovementComponent>();
+    assert ( Registered );
+    Registered = ecs.RegisterSystemChecked <DamageSystem, DamageComponent, HPComponent> ();
+    assert ( Registered );
 
-    assert ( ecs.RemoveEntity( e2 ) );
-    auto e3 = ecs.CreateEntity();
-
-    ecs.AddComponent <MovementComponent> ( e3 ,{ 10.f, { 0.0f, 1.0f, 0.0f } } );
-    ecs.AddComponent <MovementComponent> ( e1, { 0.5f, { 0.0f, 1.0f, 0.0f } } );
-
-    auto comp1 = ecs.GetComponent<MovementComponent>( e3 );
-    auto comp2 = ecs.GetComponent<MovementComponent>( e1 );
-
-    assert ( comp1.Speed == 10.f && comp2.Speed == 0.5f );
+    // Test that ecs won't register already registered systems.
+    Registered = ecs.RegisterSystemChecked<DamageSystem, HPComponent, DamageComponent>();
+    assert ( !Registered );
+    Registered = ecs.RegisterSystemChecked<MovementSystem, LocationComponent, MovementComponent>();
+    assert ( !Registered );
 
 }
 
-int main()
-
+void TestECSDataFill ( ECS & ecs, int nOfEntities )
 {
 
+    std::default_random_engine gen;
+    std::uniform_real_distribution<float> distribution  ( -50.f, 50.f );
+    std::uniform_int_distribution<int> int_distributaion ( 1, 1000 );
+
+    std::vector <EntityHandle> handles;
+    for ( int i = 0; i < nOfEntities; i ++ )
+    {
+        auto entity = ecs.CreateEntity();
+        auto location = Vector { distribution ( gen ), distribution ( gen ), distribution ( gen ) };
+        auto speed = distribution ( gen );
+        /*
+        assert ( ecs.AddComponent ( entity, LocationComponent ( entity, location )));
+        assert ( ecs.AddComponent( entity, MovementComponent ( entity, speed, location )));
+        assert ( ecs.AddComponent( entity, HPComponent ( entity, 100 ) ) );
+*/
+
+        ecs.AddComponent ( entity, LocationComponent ( entity, location ));
+        ecs.AddComponent( entity, MovementComponent ( entity, speed, location ));
+        ecs.AddComponent( entity, HPComponent ( entity, int_distributaion ( gen ) ) ) ;
+
+
+        handles.push_back ( entity );
+    }
+
+    for ( auto e : handles )
+    {
+        if ( e % 2 == 0 && e > 0 )
+        {
+            /*assert ( ecs.AddComponent( e, DamageComponent { e, e-1, int_distributaion ( gen ) } ) )*/;
+            ecs.AddComponent( e, DamageComponent { e, e-1, int_distributaion ( gen ) } );
+        }
+    }
+}
+
+
+void TestECS( int nOfEntities )
+{
+    ECS ecs;
+    TestECSRegistrations( ecs );
+    TestECSDataFill( ecs, nOfEntities );
+
+    std::cout << "Running profiling on : " << nOfEntities << " entities" << std::endl;
+    std::cout << "////////////////////////////////////////////////////////////////" << std::endl;
+
+    for ( int i = 0; i < 100; i ++ )
+    {
+        std::cout << " ------------- " << std::endl;
+        auto start = std::chrono::system_clock::now();
+        ecs.RunSystem<DamageSystem>();
+        ecs.RunSystem<MovementSystem>();
+        auto end = std::chrono::system_clock::now();
+        std::cout << "Tick. Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds> ( end - start ).count() << "ms" << std::endl;
+    }
+    std::cout << "////////////////////////////////////////////////////////////////" << std::endl;
+
+
+
+
+
+
+
+}
+
+int main( int argc, char ** argv )
+
+{
+    int nOfEntities = 10;
+
+    if ( argc > 1 )
+    {
+        nOfEntities = std::stoi ( std::string ( argv[1] ) );
+    }
     TestPackedArray();
-    TestECS ();
+    TestECS ( nOfEntities );
+
 
 /*
 

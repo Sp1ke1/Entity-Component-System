@@ -2,73 +2,80 @@
 
 #include "ObjectManager.h"
 #include "Entity.h"
+
 class ECS;
 
-class System {
+class System
+{
 
 public:
-    System ( const Signature & SystemSignature )
-    : m_Signature( SystemSignature )
-    {};
 
-    System ( const Signature && SystemSignature )
-    : m_Signature ( SystemSignature )
-    {};
+	System ( Signature && SystemSignature )
+			: m_Signature ( std::move ( SystemSignature ) )
+	{};
 
-    void AddEntity ( Entity & e)
-    {
-        const auto Handle = m_Entities.AddObject ( e.GetHandle() );
-        m_EntitiesHandles [ e.GetHandle() ] = Handle;
-    }
+	System ( const Signature & SystemSignature )
+			: m_Signature ( SystemSignature )
+	{};
 
-    bool AddEntityChecked ( Entity & e )
-    {
-        if ( m_EntitiesHandles . count ( e.GetHandle() ) != 0 )
-            return false;
-        AddEntity( e );
-        return true;
-    }
+	System () = default;
 
-    bool RemoveEntityChecked ( Entity & e )
-    {
-        if (m_EntitiesHandles . count (e.GetHandle() ) == 0 )
-            return false;
-        RemoveEntity( e );
-        return true;
-    }
+	virtual ~System () = default;
 
-    void RemoveEntity ( Entity & e )
-    {
-        m_Entities . RemoveObject ( m_EntitiesHandles . at ( e.GetHandle() ) );
-        m_EntitiesHandles.erase( e.GetHandle() );
-    }
+	void AddEntity ( Entity & e )
+	{
+		const auto Handle = m_Entities . AddObject ( e . GetHandle () );
+		m_EntitiesHandles[ e . GetHandle () ] = Handle;
+	}
 
-    void SetSignature ( const Signature & signature )
-    {
-        m_Signature = signature;
-    }
+	bool AddEntityChecked ( Entity & e )
+	{
+		if ( m_EntitiesHandles . count ( e . GetHandle () ) != 0 )
+			return false;
+		AddEntity ( e );
+		return true;
+	}
 
-    void SetSignature ( const Signature && signature )
-    {
-        m_Signature = signature;
-    }
-    void OnEntitySignatureChanged ( Entity & e, const Signature & signature )
-    {
-        const bool Match = std::includes ( m_Signature.begin(), m_Signature.end(), signature.begin(), signature.end() );
-        if ( Match )
-        {
-            AddEntityChecked ( e );
-        }
-        else
-        {
-            RemoveEntityChecked ( e );
-        }
-    }
+	bool RemoveEntityChecked ( Entity & e )
+	{
+		if ( m_EntitiesHandles . count ( e . GetHandle () ) == 0 )
+			return false;
+		RemoveEntity ( e );
+		return true;
+	}
 
-    virtual void Run ( ECS & e ) = 0;
+	void RemoveEntity ( Entity & e )
+	{
+		m_Entities . RemoveObject ( m_EntitiesHandles . at ( e . GetHandle () ) );
+		m_EntitiesHandles . erase ( e . GetHandle () );
+	}
+
+	void SetSignature ( const Signature & signature )
+	{
+		m_Signature = signature;
+	}
+
+	void SetSignature ( Signature && signature )
+	{
+		m_Signature = std::move ( signature );
+	}
+
+	void OnEntitySignatureChanged ( Entity & e, const Signature & signature )
+	{
+		const bool Match = std::includes ( signature . begin (), signature . end (), m_Signature . begin (),
+										   m_Signature . end () );
+		if ( Match ) {
+			AddEntityChecked ( e );
+		} else {
+			RemoveEntityChecked ( e );
+		}
+	}
+
+	virtual void Run ( ECS & e ) = 0;
 
 private:
-    Signature m_Signature;
-    std::unordered_map<EntityHandle, ObjectHandle> m_EntitiesHandles;
-    ObjectManager<EntityHandle> m_Entities; // Two duplicating containers are here for speed up. ObjectManager for quick iteration. Set for
+	Signature m_Signature;
+	std::unordered_map <EntityHandle, ObjectHandle> m_EntitiesHandles;
+protected:
+	ObjectManager <EntityHandle> m_Entities;
 };
