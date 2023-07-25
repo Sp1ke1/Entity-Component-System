@@ -30,12 +30,10 @@ public:
 		}
 		for ( auto e : DeadEntitiesToRemove ) {
 			ecs . RemoveEntity ( e );
-			std::cout << "Removing dead entity: " << e << std::endl;
 		}
 
 		for ( auto e : DamageComponentsToRemove ) {
 			ecs . RemoveEntity ( e );
-			std::cout << "Removing entity that has destroyed target: " << e << std::endl;
 		}
 	}
 };
@@ -56,5 +54,14 @@ public:
 			locationComponent . Location += movementComponent . Direction * movementComponent . Speed;
 		}
 	}
+};
+
+class RenderSystem : public System
+{
+public:
+
+    virtual void Run ( ECS & ecs ) override
+    {
+    }
 };
 

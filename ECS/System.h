@@ -2,6 +2,7 @@
 
 #include "ObjectManager.h"
 #include "Entity.h"
+#include <algorithm>
 
 class ECS;
 

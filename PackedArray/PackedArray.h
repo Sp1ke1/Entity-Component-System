@@ -1,14 +1,11 @@
 #pragma once
 
-#include "ECSInclude.h" // TODO: solve includes problem. Refactor all includes
+#include <vector>
+#include <unordered_map>
+#include <optional>
+#include <set>
 
 using PackedArrayHandle = std::size_t;
-
-enum HandleInjectionMethod
-{
-	NoInjection,
-	Constructor,
-};
 
 
 template <typename T>
@@ -21,7 +18,7 @@ public:
 	PackedArrayHandle EmplaceBack ( Args && ... Arguments )
 	{
 		const auto Handle = AllocateHandleForIndex ( m_Data . size () );
-		m_Data . push_back ( T ( std::forward <Args> ( Arguments ) ... ) );
+		m_Data . emplace_back ( std::forward <Args> ( Arguments ) ... );
 		return Handle;
 	}
 
@@ -78,16 +75,16 @@ public:
 		return index < m_Data.size();
 	}
 
-	PackedArrayHandle HandleFromIndex ( std::size_t index ) const
+	PackedArrayHandle GetHandleFromIndex (std::size_t index ) const
 	{
 		return m_IndexToHandle . at ( index );
 	}
 
-	std::optional<PackedArrayHandle> HandleFromIndexChecked ( std::size_t index ) const
+	std::optional<PackedArrayHandle> GetHandleFromIndexChecked (std::size_t index ) const
 	{
 		if ( ! IsValidIndex ( index ) )
 			return std::nullopt;
-		return HandleFromIndex ( index );
+		return GetHandleFromIndex(index);
 	}
 
 	std::size_t Size() const
@@ -181,7 +178,7 @@ private:
 
 	PackedArrayHandle AllocateHandleForIndex ( std::size_t index )
 	{
-		PackedArrayHandle Handle = 0;
+		PackedArrayHandle Handle;
 		if ( m_FreeHandles . empty () ) {
 			index <= m_Data . size () ? Handle = m_Data . size () : Handle = index;
 		} else {

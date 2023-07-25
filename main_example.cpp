@@ -39,7 +39,7 @@ void FillEcsData ( ECS & ecs )
 	ecs . AddComponent <EntityActionManagerComponent> ( e1, managerComponent1 );
 	ecs . AddComponent <EntityActionManagerComponent> ( e2, managerComponent2 );
 
-	std::cout << "Created 2 entities with sets of components 1:{Private Private Public} 2:{Private Public}" << std::endl;
+	std::cout << "Created 2 entities with EntityActionManager components. Sets of entity actions 1:{Private Private Public} 2:{Private Public}" << std::endl;
 }
 
 void RunSystems ( ECS & ecs )
@@ -68,12 +68,11 @@ int main ()
 	std::cout << "------ Entity Component System example ------" << std::endl;
 
 	ECS ecs;
-
 	RegisterTypes ( ecs );
 	FillEcsData ( ecs );
 	RunSystems ( ecs );
 
-	std::cout << "Exiting." << std::endl;
+	std::cout << "------ Exiting ------" << std::endl;
 
 	return 0;
 }

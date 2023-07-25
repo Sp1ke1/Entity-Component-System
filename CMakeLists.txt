@@ -18,7 +18,6 @@ endif ()
 set (ECS_SOURCE ECS/ComponentBase.h
                 ECS/ComponentManager.h
                 ECS/ECS.h
-                ECS/ECSInclude.h
                 ECS/Entity.h
                 ECS/EntityManager.h
                 ECS/ObjectManager.h
@@ -32,7 +31,7 @@ set(TEST_SOURCE main_test.cpp
                 Test/TestComponents.h
                 Test/TestSystems.h)
 
-set (EXAMPLE_SOURCE main.cpp
+set (EXAMPLE_SOURCE main_example.cpp
                     Example/EntityAction.h
                     Example/EntityActionManager.h
                     Example/EntityActionSystem.h

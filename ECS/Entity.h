@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ECSInclude.h"
+#include "Types.h"
 
 using Signature = std::set<ComponentType>;
 

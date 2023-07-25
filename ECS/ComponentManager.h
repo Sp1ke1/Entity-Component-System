@@ -2,6 +2,7 @@
 
 #include "ObjectManager.h"
 #include "Entity.h"
+#include <memory>
 
 // Reference: https://austinmorlan.com/posts/entity_component_system/#the-component-array
 
@@ -98,11 +99,14 @@ public:
 	template <typename T>
 	bool AddComponentChecked ( Entity & entity, const T & component )
 	{
-		if ( ! GetIsComponentRegistered <T> () )
-			return false;
-		const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( component );
-		entity . AddComponent ( { GetComponentType <T> (), ComponentHandle } );
-		return true;
+        if ( ! GetIsComponentRegistered <T> () )
+            return false;
+        const auto ComponentType = GetComponentType<T> ();
+        if ( entity . GetHasComponent( ComponentType ) )
+            return false;
+        const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( component );
+        entity . AddComponent ( { ComponentType, ComponentHandle } );
+        return true;
 	}
 
 	template <typename T>
@@ -110,8 +114,11 @@ public:
 	{
 		if ( ! GetIsComponentRegistered <T> () )
 			return false;
+        const auto ComponentType = GetComponentType<T> ();
+        if ( entity . GetHasComponent( ComponentType ) )
+            return false;
 		const auto ComponentHandle = GetComponentArray <T> () -> AddObject ( std::forward <T> ( component ) );
-		entity . AddComponent ( { GetComponentType <T> (), ComponentHandle } );
+		entity . AddComponent ( { ComponentType, ComponentHandle } );
 		return true;
 	}
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "ECS.h"
+#include "ECS/ECS.h"
 #include "PrivateEntityAction.h"
 #include "EntityActionManager.h"
 

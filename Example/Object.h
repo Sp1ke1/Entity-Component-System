@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecs/ComponentBase.h"
+#include "ECS/ComponentBase.h"
 #include "Types.h"
 
 class Object : public ComponentBase

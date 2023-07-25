@@ -1,7 +1,6 @@
 #pragma once
 
-#include "System.h"
-#include "ECS.h"
+#include "ECS/ECS.h"
 #include "EntityActionManager.h"
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PackedArray.h"
+#include "Types.h"
 
 
 class IObjectManager
@@ -57,9 +58,9 @@ public:
 		return m_Objects . GetByIndex ( index );
 	}
 
-	ObjectHandle HandleFromIndex ( std::size_t index ) const
+	ObjectHandle GetHandleFromIndex (std::size_t index ) const
 	{
-		return m_Objects . HandleFromIndex ( index );
+		return m_Objects.GetHandleFromIndex(index);
 	}
 
 	bool GetIsValidHandle ( ObjectHandle handle ) const
@@ -125,9 +126,9 @@ public:
 		return m_Objects . GetByIndexChecked ( index );
 	}
 
-	std::optional <ObjectHandle> HandleFromIndexChecked ( std::size_t index ) const
+	std::optional <ObjectHandle> GetHandleFromIndexChecked (std::size_t index ) const
 	{
-		return m_Objects . HandleFromIndexChecked ( index );
+		return m_Objects.GetHandleFromIndexChecked(index);
 	}
 	/* End ObjectManager safe interface */
 

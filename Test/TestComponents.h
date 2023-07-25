@@ -24,6 +24,10 @@ struct Vector
 		return * this;
 	}
 
+
+    bool operator != ( const Vector & rhs ) const { return X != rhs . X || Y != rhs . Y || Z != rhs . Z; }
+    bool operator == ( const Vector & rhs ) const { return ! (rhs != *this); }
+
 	float X = 0.f;
 	float Y = 0.f;
 	float Z = 0.f;
@@ -56,14 +60,11 @@ struct HPComponent : public ComponentBase
 	{
 		HP -= damage;
 		if ( HP <= 0 ) {
-			std::cout << "Entity: " << GetOwner() << " Received fatal damage " << damage << std::endl;
 			HP = 0;
 			IsDead = true;
 			return;
 		}
-
-		std::cout << "Entity: " << GetOwner() << " Received damage: " << damage << " Current HP: " << HP << std::endl;
-	}
+    }
 
 	int HP = 100;
 	bool IsDead = false;
@@ -79,12 +80,8 @@ struct DamageComponent : public ComponentBase
 	void Attack ( HPComponent & other )
 	{
 		if ( other . GetOwner () != EntityToDamage ) {
-			std::cerr << "Attack component in entity: " << GetOwner () << " try to attack wrong entity: "
-					  << other . GetOwner () << std::endl;
 			return;
 		}
-
-		std::cout << "Entity: " << GetOwner() << " Attacking entity: " << other.GetOwner() << " with damage: " << Damage << std::endl;
 		other . ReceiveDamage ( Damage );
 	}
 

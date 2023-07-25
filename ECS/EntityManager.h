@@ -2,6 +2,7 @@
 
 #include "ObjectManager.h"
 #include "Entity.h"
+#include <memory>
 
 class EntityManager
 {

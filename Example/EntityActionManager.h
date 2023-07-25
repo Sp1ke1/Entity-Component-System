@@ -1,6 +1,6 @@
 #pragma once
-#include "ecs/ObjectManager.h"
-#include "ecs/ComponentBase.h"
+#include "ECS/ObjectManager.h"
+#include "ECS/ComponentBase.h"
 #include "EntityAction.h"
 
 class EntityActionManagerComponent : public ObjectManager<std::shared_ptr<EntityAction>> {

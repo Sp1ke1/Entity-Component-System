@@ -3,7 +3,6 @@
 #include "Test/TestSystems.h"
 #include "Test/TestComponents.h"
 #include <cassert>
-#include <chrono>
 #include <random>
 
 
@@ -15,11 +14,17 @@ void TestPackedArray ()
 	auto id2 = data.Add( 4 );
 	auto id3 = data.Add ( 10 );
 
+    assert ( data.Size() == 3 );
+
 	assert ( data.Get( id1 ) == 3 );
 	assert ( data.Get ( id2 ) == 4 );
 	assert ( data.Get ( id3 ) == 10 );
 
-	data.RemoveChecked ( id2 );
+	assert ( data.RemoveChecked ( id2 ) );
+
+    assert ( data . IsValidHandle ( data . GetHandleFromIndex( 1 ) ) );
+
+    assert ( data.Size() == 2 );
 
 	assert ( data.Get ( id1 ) == 3 );
 	assert ( data.Get ( id3 ) == 10 );
@@ -42,92 +47,180 @@ void TestPackedArray ()
 	assert ( data.RemoveChecked(id5) );
 	assert ( !data.GetChecked(id5 ) );
 
+    std::cout << "(Packed array) tests passed" << std::endl;
+
 }
-void TestECSRegistrations ( ECS & ecs )
+
+void TestECSComponentRegistration ( ECS & ecs )
 {
-    ecs.RegisterComponentChecked<LocationComponent>();
-	assert ( ecs. GetIsComponentRegistered <LocationComponent>() );
+    ecs.RegisterComponent<LocationComponent>();
+    assert ( ecs. GetIsComponentRegistered <LocationComponent>() );
     assert ( ecs.RegisterComponentChecked<MovementComponent>());
     assert ( ecs.RegisterComponentChecked<DamageComponent>());
     assert ( ecs.RegisterComponentChecked<HPComponent>());
     assert ( !ecs.RegisterComponentChecked<HPComponent>() );
-	assert ( ecs. GetIsComponentRegistered <HPComponent> () );
-	std::cout << "Component registration tests passed" << std::endl;
-
-	
-	ecs . RegisterSystem <MovementSystem, LocationComponent, MovementComponent> ();
-	assert ( ecs . GetIsSystemRegistered <MovementSystem>() );
-	assert ( !ecs . GetIsSystemRegistered <DamageSystem>() );
-	bool Registered = ecs . RegisterSystemChecked <DamageSystem, DamageComponent, HPComponent> ();
-	assert ( Registered );
-	Registered = ecs . RegisterSystemChecked <DamageSystem, HPComponent, DamageComponent>();
-	assert ( !Registered );
-	assert ( ecs . GetIsSystemRegistered <DamageSystem>() );
-	std::cout << "System registration tests passed" << std::endl;
-
+    assert ( ecs. GetIsComponentRegistered <HPComponent> () );
+    std::cout << "(Component registration) tests passed" << std::endl;
 }
 
-void TestECSDataFill ( ECS & ecs, int nOfEntities )
+void TestECSSystemRegistration ( ECS & ecs )
 {
-
-	std::default_random_engine gen;
-	std::uniform_real_distribution<float> distribution  ( -50.f, 50.f );
-	std::uniform_int_distribution<int> int_distributaion ( 1, 1000 );
-
-	std::vector <EntityHandle> handles;
-	for ( int i = 0; i < nOfEntities; i ++ )
-	{
-		auto entity = ecs.CreateEntity();
-		auto location = Vector { distribution ( gen ), distribution ( gen ), distribution ( gen ) };
-		auto speed = distribution ( gen );
-		/*
-		assert ( ECS.AddComponent ( entity, LocationComponent ( entity, location )));
-		assert ( ECS.AddComponent( entity, MovementComponent ( entity, speed, location )));
-		assert ( ECS.AddComponent( entity, HPComponent ( entity, 100 ) ) );
-*/
-
-		ecs.AddComponent ( entity, LocationComponent ( entity, location ));
-		ecs.AddComponent( entity, MovementComponent ( entity, speed, location ));
-		ecs.AddComponent( entity, HPComponent ( entity, int_distributaion ( gen ) ) ) ;
-
-
-		handles.push_back ( entity );
-	}
-
-	for ( auto e : handles )
-	{
-		if ( e % 2 == 0 && e > 0 )
-		{
-			/*assert ( ECS.AddComponent( e, DamageComponent { e, e-1, int_distributaion ( gen ) } ) )*/;
-			ecs.AddComponent( e, DamageComponent { e, e-1, int_distributaion ( gen ) } );
-		}
-	}
+    ecs . RegisterSystem <MovementSystem, LocationComponent, MovementComponent> ();
+    assert ( ecs . GetIsSystemRegistered <MovementSystem>() );
+    assert ( !ecs . GetIsSystemRegistered <DamageSystem>() );
+    bool Registered = ecs . RegisterSystemChecked <DamageSystem, DamageComponent, HPComponent> ();
+    assert ( Registered );
+    Registered = ecs . RegisterSystemChecked <DamageSystem, HPComponent, DamageComponent>();
+    assert ( !Registered );
+    assert ( ecs . GetIsSystemRegistered <DamageSystem>() );
+    std::cout << "(System registration) tests passed" << std::endl;
 }
 
-
-void TestECS( int nOfEntities )
+void TestECSEntityCreation ( ECS & ecs )
 {
-	ECS ecs;
-	TestECSRegistrations( ecs );
-	TestECSDataFill( ecs, nOfEntities );
+    assert ( ! ecs .GetIsValidEntityHandle( 0 ) );
+    auto e1 = ecs . CreateEntity();
+    auto e2 = ecs . CreateEntity();
 
-	std::cout << "Running profiling on : " << nOfEntities << " entities" << std::endl;
-	std::cout << "////////////////////////////////////////////////////////////////" << std::endl;
+    Entity & en1 = ecs .GetEntity( e1 );
+    auto en2 = ecs .GetEntityChecked( e2 );
+    assert ( en1.GetHandle() == e1 );
+    assert ( en2 );
+    assert ( en2 -> get() . GetHandle() == e2 );
+    assert ( ecs . GetIsValidEntityHandle( e1 ) );
+    assert ( ecs . GetIsValidEntityHandle( e2 ) );
+    ecs . RemoveEntity ( e1 );
+    assert ( ! ecs . GetIsValidEntityHandle( e1 ) );
+    assert ( ecs . GetIsValidEntityHandle( e2 ) );
+    assert ( ! ecs . RemoveEntityChecked( e1 ) );
+    assert ( ecs . RemoveEntityChecked( e2 ) );
+    assert ( ! ecs . GetIsValidEntityHandle( e2  ) );
+    std::cout << "(Entity creation/deletion) tests passed" << std::endl;
+}
 
-	for ( int i = 0; i < 100; i ++ )
-	{
-		std::cout << " ------------- " << std::endl;
-		auto start = std::chrono::system_clock::now();
-		ecs.RunSystem<DamageSystem>();
-		ecs.RunSystem<MovementSystem>();
-		auto end = std::chrono::system_clock::now();
-		std::cout << "Tick. Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds> ( end - start ).count() << "ms" << std::endl;
-	}
-	std::cout << "////////////////////////////////////////////////////////////////" << std::endl;
+void TestECSComponentsCreation ( ECS & ecs )
+{
+    auto e1 = ecs . CreateEntity();
+    auto e2 = ecs . CreateEntity();
+    auto e3 = ecs . CreateEntity();
+
+    ecs . AddComponent <LocationComponent> ( e1, { e1, { 0.0f, 0.0f, 1.0f } } );
+    assert ( ecs .GetEntityHasComponent<LocationComponent>( e1 ) );
+    assert ( ecs .GetEntityHasComponentChecked<LocationComponent>( e1 ) );
+    auto ComponentOpt = ecs .GetComponentChecked<LocationComponent>( e1 );
+    assert ( ComponentOpt.has_value() );
+    LocationComponent & Component = ComponentOpt -> get();
+    Component.Location.X = 10.f;
+    auto Component1 = ecs .GetComponent<LocationComponent> ( e1 );
+    assert ( Component1.Location.X == 10.f );
+    assert ( !ecs .AddComponentChecked <LocationComponent> ( e1, { e1, { 0.0f, 0.0f, 0.0f } } ) );
+    assert ( ecs . AddComponentChecked<HPComponent> ( e2, { e2, 100 } ) );
+    assert ( ! ecs . GetEntityHasComponent<HPComponent> ( e1 ) );
+    assert ( ecs . GetEntityHasComponent<HPComponent> ( e2 ) );
+    ecs . AddComponent <LocationComponent> ( e3, { e3, { 10.f, 10.f, 10.f } } );
+    ecs . RemoveComponent <LocationComponent> ( e1 );
+    assert ( !ecs . GetEntityHasComponent<LocationComponent>( e1 ) );
+    assert ( !ecs . RemoveComponentChecked<LocationComponent>( e1 ) );
+    assert ( ecs . RemoveComponentChecked<HPComponent>( e2 ) );
+    assert ( !ecs . GetEntityHasComponent<HPComponent>( e2 ) );
+    ecs . RemoveEntity ( e3 );
+    assert ( !ecs . GetEntityHasComponentChecked <LocationComponent>( e3 ) );
+    std::cout << "(Component creation/deletion) tests passed" << std::endl;
+}
+
+void TestECSRegistrations ( ECS & ecs )
+{
+    TestECSComponentRegistration( ecs );
+    TestECSSystemRegistration( ecs );
+}
+
+void TestECSDataCreation ( ECS & ecs )
+{
+    TestECSEntityCreation( ecs );
+    TestECSComponentsCreation( ecs );
+}
+
+std::vector<EntityHandle> PrepareECSSystemRun ( ECS & ecs )
+{
+    auto e1 = ecs . CreateEntity();
+    auto e2 = ecs . CreateEntity();
+    auto e3 = ecs . CreateEntity();
+    auto e4 = ecs . CreateEntity();
+
+    std::vector<EntityHandle> entityHandles = { e1, e2, e3, e4 };
+    std::default_random_engine gen;
+    std::uniform_real_distribution<float> distribution  ( -50.f, 50.f );
+
+    for ( std::size_t i = 0; i < entityHandles . size(); i ++  )
+    {
+        EntityHandle e = entityHandles [ i ];
+        Vector location = { distribution ( gen ), distribution ( gen ), distribution ( gen ) };
+        Vector direction = { distribution ( gen ), distribution ( gen ), distribution ( gen ) };
+        float speed = distribution ( gen );
+
+        ecs . AddComponent <MovementComponent> ( e, { e, speed, direction } );
+        ecs . AddComponent <LocationComponent> ( e, { e, location } );
+        ecs . AddComponent <HPComponent> ( e, { e, 100 });
+
+        EntityHandle entityToDamage = i % 2 == 1 ? e - 1 : e + 1; // Odds attack even, even attack odds
+        ecs .AddComponent <DamageComponent> ( e, { e, entityToDamage, 20 } );
+    }
+    return entityHandles;
+}
+
+void TestECSSystemRun ( ECS & ecs )
+{
+
+     PrepareECSSystemRun( ecs );
 
 
+    // Initialize initial locations
+    std::vector<Vector> initialLocations;
+    auto locationComponents = ecs . GetComponentsByType <LocationComponent> () . lock();
+    for ( auto & component : *locationComponents )
+        initialLocations . push_back ( component . Location );
+
+    // Run system that moves each component in random direction
+    assert ( ecs . RunSystemChecked<MovementSystem> () );;
 
 
+    // Check if each component location was modified
+    for ( size_t i = 0; i < locationComponents -> Size(); i ++ )
+    {
+        auto Handle = locationComponents ->GetHandleFromIndex( i );
+        auto & ModifiedComponent = locationComponents -> GetObject ( Handle );
+        assert ( ModifiedComponent . Location != initialLocations [ i ] );
+    }
+
+    // Initialize initial HP
+    std::vector<int> InitialHPArray;
+    auto hpComponents = ecs .GetComponentsByType<HPComponent> () . lock();
+    for ( auto & component : *hpComponents )
+        InitialHPArray . push_back ( component . HP );
+
+    // Run system that damages each component ( odd entities attack even entities and otherwise )
+    assert ( ecs . RunSystemChecked<DamageSystem>() );
+
+    // Check if each component HP was modified.
+    for ( size_t i = 0; i < hpComponents -> Size(); i ++ )
+    {
+        auto Handle = hpComponents -> GetHandleFromIndex ( i );
+        auto & ModifiedComponent = hpComponents ->GetObject( Handle );
+        assert ( ModifiedComponent.HP != InitialHPArray [ i ] );
+    }
+
+    assert ( ! ecs .RunSystemChecked<RenderSystem>() );
+    assert ( ecs . RegisterSystemChecked<RenderSystem> () ) ;
+    assert ( ecs .RunSystemChecked<RenderSystem> () );
+    std::cout << "(Systems run) tests passed" << std::endl;
+}
+
+void TestECS ()
+{
+    ECS ecs;
+    TestECSRegistrations( ecs );
+    TestECSDataCreation( ecs );
+    TestECSSystemRun( ecs );
 
 
 }
@@ -135,43 +228,12 @@ void TestECS( int nOfEntities )
 int main( int argc, char ** argv )
 
 {
-	int nOfEntities = 10;
+    std::cout << "------- Starting testing packed array ------" << std::endl;
 
-	if ( argc > 1 )
-	{
-		nOfEntities = std::stoi ( std::string ( argv[1] ) );
-	}
-	TestPackedArray();
-	TestECS ( nOfEntities );
-
-
-/*
-
-    Entity<EntityAction> e1 ( 0 );
-
-    EntityAction ea1 ( &e1 );
-    EntityAction ea2 ( &e1 );
-    EntityAction ea3 ( &e1 );
-    EntityAction ea4 ( &e1 );
-
-
-    ea1.SetIsVisible( true );
-    ea2.SetIsVisible( false );
-    ea3.SetIsVisible( true );
-    ea4.SetIsVisible( true );
-
-    auto & ObjectManager = static_cast <EntityActionManager&> ( e1.GetObjectManager() );
-    auto VisibleObjects = ObjectManager . GetAllVisibleActions();
-    assert ( VisibleObjects.size() == 3 );
-
-    ea1.OnRemoved();
-    VisibleObjects = ObjectManager . GetAllVisibleActions();
-    assert ( VisibleObjects.size() == 2 );
-    ea3.SetIsVisible( false );
-    VisibleObjects = ObjectManager . GetAllVisibleActions();
-    assert ( VisibleObjects.size() == 1 );
-*/
-
+    TestPackedArray();
+    std::cout << "------ Starting testing Entity Component System ------" << std::endl;
+	TestECS();
+    std::cout << "------ All tests passed ------" << std::endl;
 
 	return 0;
 
