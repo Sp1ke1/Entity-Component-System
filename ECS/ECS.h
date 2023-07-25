@@ -33,7 +33,8 @@ public:
 	bool GetEntityHasComponent ( EntityHandle entityHandle )
 	{
 		const auto ComponentType = GetComponentType <T> ();
-		return m_EntityManager . GetEntityHasComponent ( entityHandle, ComponentType );
+		Entity & e = GetEntity ( entityHandle );
+		return e. GetHasComponent ( ComponentType );
 	}
 
 	bool GetIsValidEntityHandle ( EntityHandle entityHandle ) const
@@ -158,10 +159,9 @@ public:
 	template <typename T>
 	bool AddComponentChecked ( EntityHandle entityHandle, const T & component )
 	{
-		auto _entity = GetEntityChecked ( entityHandle );
-		if ( ! _entity )
+		if ( ! GetIsValidEntityHandle ( entityHandle ) )
 			return false;
-		Entity & entity = _entity . value () . get ();
+		Entity & entity = GetEntity ( entityHandle );
 		if ( ! m_ComponentManager . AddComponentChecked ( entity, component ) )
 			return false;
 		m_SystemManager . OnEntitySignatureChanged ( entity, entity . GetSignature () );
@@ -171,10 +171,9 @@ public:
 	template <typename T>
 	bool AddComponentChecked ( EntityHandle entityHandle, T && component )
 	{
-		auto _entity = GetEntityChecked ( entityHandle );
-		if ( ! _entity )
+		if ( ! GetIsValidEntityHandle ( entityHandle ) )
 			return false;
-		Entity & entity = _entity . value () . get ();
+		Entity & entity = GetEntity ( entityHandle );
 		if ( ! m_ComponentManager . AddComponentChecked ( entity, std::forward <T> ( component ) ) )
 			return false;
 		m_SystemManager . OnEntitySignatureChanged ( entity, entity . GetSignature () );
@@ -202,6 +201,14 @@ public:
 			return std::nullopt;
 		Entity & entity = _entity . value () . get ();
 		return m_ComponentManager . GetComponentChecked <T> ( entity );
+	}
+
+	template <typename T>
+	bool GetEntityHasComponentChecked ( EntityHandle entityHandle )
+	{
+		if ( ! GetIsValidEntityHandle ( entityHandle ) )
+			return false;
+		return GetEntityHasComponent <T> ( entityHandle );
 	}
 
 

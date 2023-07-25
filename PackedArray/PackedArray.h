@@ -4,37 +4,43 @@
 
 using PackedArrayHandle = std::size_t;
 
-enum HandleInjectionMethod {
+enum HandleInjectionMethod
+{
 	NoInjection,
 	Constructor,
 };
 
 
 template <typename T>
-class PackedArray {
+class PackedArray
+{
 public:
 
 	// --- Begin PackedArray interface
 	template <typename ... Args>
-	PackedArrayHandle EmplaceBack ( Args && ... Arguments ) {
+	PackedArrayHandle EmplaceBack ( Args && ... Arguments )
+	{
 		const auto Handle = AllocateHandleForIndex ( m_Data . size () );
 		m_Data . push_back ( T ( std::forward <Args> ( Arguments ) ... ) );
 		return Handle;
 	}
 
-	PackedArrayHandle Add ( T && object ) {
+	PackedArrayHandle Add ( T && object )
+	{
 		const auto Handle = AllocateHandleForIndex ( m_Data . size () );
-		m_Data . push_back ( std::move ( object ) );
+		m_Data . push_back ( std::forward <T> ( object ) );
 		return Handle;
 	}
 
-	PackedArrayHandle Add ( const T & object ) {
+	PackedArrayHandle Add ( const T & object )
+	{
 		const auto Handle = AllocateHandleForIndex ( m_Data . size () );
 		m_Data . push_back ( object );
 		return Handle;
 	}
 
-	void Remove ( PackedArrayHandle handle ) {
+	void Remove ( PackedArrayHandle handle )
+	{
 		// Fetch all data of swapped elements
 		const auto ElementToRemoveIndex = m_HandleToIndex[ handle ];
 		const auto ElementToRemoveHandle = m_IndexToHandle[ ElementToRemoveIndex ];
@@ -56,61 +62,130 @@ public:
 		m_FreeHandles . insert ( ElementToRemoveHandle );
 	}
 
-	bool IsValidHandle ( PackedArrayHandle handle ) const {
+	void RemoveByIndex ( std::size_t index )
+	{
+		const auto Handle = m_IndexToHandle . at ( index );
+		Remove ( Handle );
+	}
+
+	bool IsValidHandle ( PackedArrayHandle handle ) const
+	{
 		return m_HandleToIndex . count ( handle ) != 0;
 	}
 
-	void Clear () {
+	bool IsValidIndex ( std::size_t index ) const
+	{
+		return index < m_Data.size();
+	}
+
+	PackedArrayHandle HandleFromIndex ( std::size_t index ) const
+	{
+		return m_IndexToHandle . at ( index );
+	}
+
+	std::optional<PackedArrayHandle> HandleFromIndexChecked ( std::size_t index ) const
+	{
+		if ( ! IsValidIndex ( index ) )
+			return std::nullopt;
+		return HandleFromIndex ( index );
+	}
+
+	std::size_t Size() const
+	{
+		return m_Data.size();
+	}
+
+	void Clear ()
+	{
 		m_Data . clear ();
 		m_HandleToIndex . clear ();
 		m_IndexToHandle . clear ();
 	}
 
-	T & operator [] ( PackedArrayHandle handle ) {
+	T & operator [] ( PackedArrayHandle handle )
+	{
 		return Get ( handle );
 	}
 
-	T & Get ( PackedArrayHandle handle ) {
+	T & Get ( PackedArrayHandle handle )
+	{
 		return m_Data[ m_HandleToIndex . at ( handle ) ];
 	}
 
-	typename std::vector <T>::iterator begin () {
+	T & GetByIndex ( std::size_t index )
+	{
+		return m_Data [ index ];
+	}
+
+	typename std::vector <T>::iterator begin ()
+	{
 		return m_Data . begin ();
 	}
 
-	typename std::vector <T>::iterator end () {
+	typename std::vector <T>::iterator end ()
+	{
 		return m_Data . end ();
 	}
+
+	typename std::vector <T>::const_iterator begin () const
+	{
+		return m_Data . begin ();
+	}
+
+	typename std::vector <T>::const_iterator end () const
+	{
+		return m_Data . end ();
+	}
+
+	PackedArrayHandle GetNextHandle () const
+	{
+		return m_FreeHandles . empty () ? m_Data . size () : * m_FreeHandles . begin ();
+	}
+
 	// --- End PackedArray interface
 
 	// --- Begin PackedArray safe interface
-	std::optional <std::reference_wrapper <T>> GetChecked ( PackedArrayHandle handle ) {
+	std::optional <std::reference_wrapper <T>> GetChecked ( PackedArrayHandle handle )
+	{
 		if ( ! IsValidHandle ( handle ) )
 			return std::nullopt;
 
 		return Get ( handle );
 	}
 
-	bool RemoveChecked ( PackedArrayHandle handle ) {
+	std::optional <std::reference_wrapper<T>> GetByIndexChecked ( std::size_t index )
+	{
+		if ( ! IsValidIndex ( index ) )
+			return std::nullopt;
+		return GetByIndex ( index );
+	}
+
+	bool RemoveChecked ( PackedArrayHandle handle )
+	{
 		if ( ! IsValidHandle ( handle ) )
 			return false;
 		Remove ( handle );
 		return true;
 	}
 
-	PackedArrayHandle GetNextHandle () const {
-		return m_FreeHandles . empty () ? m_Data . size () : *m_FreeHandles . begin ();
+	bool RemoveByIndexChecked ( std::size_t index )
+	{
+		if ( ! IsValidIndex ( index ) )
+			return false;
+		RemoveByIndex ( index );
+		return true;
 	}
 	// --- End PackedArray safe interface
 
 private:
 
-	PackedArrayHandle AllocateHandleForIndex ( std::size_t index ) {
+	PackedArrayHandle AllocateHandleForIndex ( std::size_t index )
+	{
 		PackedArrayHandle Handle = 0;
 		if ( m_FreeHandles . empty () ) {
 			index <= m_Data . size () ? Handle = m_Data . size () : Handle = index;
 		} else {
-			Handle = *m_FreeHandles . begin ();
+			Handle = * m_FreeHandles . begin ();
 			m_FreeHandles . erase ( m_FreeHandles . begin () );
 		}
 

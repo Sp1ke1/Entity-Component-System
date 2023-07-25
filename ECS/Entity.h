@@ -13,7 +13,7 @@ public:
 
     // --- Begin entity interface
 
-    const EntityHandle GetHandle() const {
+	EntityHandle GetHandle() const {
         return m_Handle;
     }
 

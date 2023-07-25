@@ -1,183 +1,79 @@
-#include <iostream>
 #include "ECS.h"
-#include "Systems/ExampleSystems.h"
-#include "Components/ExampleComponents.h"
-#include <cassert>
-#include <chrono>
-#include <random>
+#include "Example/EntityActionSystemSwitcher.h"
+#include "Example/EntityActionSystem.h"
+#include "Example/PrivateEntityAction.h"
+#include "Example/PublicEntityAction.h"
+#include "Example/EntityActionSystemComponentRemover.h"
 
-
-void TestPackedArray ()
+void RegisterTypes ( ECS & ecs )
 {
-    PackedArray <int> data;
-
-    auto id1 = data.Add( 3 );
-    auto id2 = data.Add( 4 );
-    auto id3 = data.Add ( 10 );
-
-    assert ( data.Get( id1 ) == 3 );
-    assert ( data.Get ( id2 ) == 4 );
-    assert ( data.Get ( id3 ) == 10 );
-
-    data.RemoveChecked ( id2 );
-
-    assert ( data.Get ( id1 ) == 3 );
-    assert ( data.Get ( id3 ) == 10 );
-    assert ( !data.GetChecked ( id2 ));
-
-    auto id4 = data.Add( 25 );
-
-    assert (data.Get(id1) == 3 );
-    assert (data.Get(id3) == 10 );
-    assert (data.Get(id4) == 25 );
-
-    data.Clear();
-
-    assert ( !data.GetChecked(id1) );
-    assert ( !data.GetChecked(id3) );
-
-    auto id5 = data.Add( 8 );
-    assert ( data.Get ( id5 ) == 8 );
-
-    assert ( data.RemoveChecked(id5) );
-    assert ( !data.GetChecked(id5 ) );
-
-}
-void TestECSRegistrations ( ECS & ecs )
-{
-    // Register components
-/*    assert ( ecs.RegisterComponent<LocationComponent>());
-    assert ( ecs.RegisterComponent<MovementComponent>());
-    assert ( ecs.RegisterComponent<DamageComponent>());
-    assert ( ecs.RegisterComponent<HPComponent>());
-    assert ( !ecs.RegisterComponent<HPComponent>() );*/
-
-    ecs.RegisterComponent<LocationComponent>();
-    ecs.RegisterComponent<MovementComponent>();
-    ecs.RegisterComponent<DamageComponent>();
-    ecs.RegisterComponent<HPComponent>();
-
-    // Register systems
-    bool Registered = ecs.RegisterSystemChecked <MovementSystem, LocationComponent, MovementComponent>();
-    assert ( Registered );
-    Registered = ecs.RegisterSystemChecked <DamageSystem, DamageComponent, HPComponent> ();
-    assert ( Registered );
-
-    // Test that ecs won't register already registered systems.
-    Registered = ecs.RegisterSystemChecked<DamageSystem, HPComponent, DamageComponent>();
-    assert ( !Registered );
-    Registered = ecs.RegisterSystemChecked<MovementSystem, LocationComponent, MovementComponent>();
-    assert ( !Registered );
-
-}
-
-void TestECSDataFill ( ECS & ecs, int nOfEntities )
-{
-
-    std::default_random_engine gen;
-    std::uniform_real_distribution<float> distribution  ( -50.f, 50.f );
-    std::uniform_int_distribution<int> int_distributaion ( 1, 1000 );
-
-    std::vector <EntityHandle> handles;
-    for ( int i = 0; i < nOfEntities; i ++ )
-    {
-        auto entity = ecs.CreateEntity();
-        auto location = Vector { distribution ( gen ), distribution ( gen ), distribution ( gen ) };
-        auto speed = distribution ( gen );
-        /*
-        assert ( ecs.AddComponent ( entity, LocationComponent ( entity, location )));
-        assert ( ecs.AddComponent( entity, MovementComponent ( entity, speed, location )));
-        assert ( ecs.AddComponent( entity, HPComponent ( entity, 100 ) ) );
-*/
-
-        ecs.AddComponent ( entity, LocationComponent ( entity, location ));
-        ecs.AddComponent( entity, MovementComponent ( entity, speed, location ));
-        ecs.AddComponent( entity, HPComponent ( entity, int_distributaion ( gen ) ) ) ;
-
-
-        handles.push_back ( entity );
-    }
-
-    for ( auto e : handles )
-    {
-        if ( e % 2 == 0 && e > 0 )
-        {
-            /*assert ( ecs.AddComponent( e, DamageComponent { e, e-1, int_distributaion ( gen ) } ) )*/;
-            ecs.AddComponent( e, DamageComponent { e, e-1, int_distributaion ( gen ) } );
-        }
-    }
+	std::cout << "--- Registering ECS types" << std::endl;
+	ecs . RegisterComponent <EntityActionManagerComponent> ();
+	std::cout << "Registered EntityActionManagerComponent" << std::endl;
+	ecs . RegisterSystem <EntityActionSystem, EntityActionManagerComponent> ();
+	std::cout << "Registered EntityActionSystem" << std::endl;
+	ecs . RegisterSystem <EntityActionSystemSwitcher, EntityActionManagerComponent> ();
+	std::cout << "Registered EntityActionSystemSwitcher" << std::endl;
+	ecs . RegisterSystem <EntityActionSystemComponentRemover, EntityActionManagerComponent> ();
+	std::cout << "Registered EntityActionSystemComponentRemover" << std::endl;
 }
 
 
-void TestECS( int nOfEntities )
+void FillEcsData ( ECS & ecs )
 {
-    ECS ecs;
-    TestECSRegistrations( ecs );
-    TestECSDataFill( ecs, nOfEntities );
+	std::cout << "--- Filling ECS with data" << std::endl;
 
-    std::cout << "Running profiling on : " << nOfEntities << " entities" << std::endl;
-    std::cout << "////////////////////////////////////////////////////////////////" << std::endl;
+	auto e1 = ecs . CreateEntity();
+	auto e2 = ecs . CreateEntity();
 
-    for ( int i = 0; i < 100; i ++ )
-    {
-        std::cout << " ------------- " << std::endl;
-        auto start = std::chrono::system_clock::now();
-        ecs.RunSystem<DamageSystem>();
-        ecs.RunSystem<MovementSystem>();
-        auto end = std::chrono::system_clock::now();
-        std::cout << "Tick. Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds> ( end - start ).count() << "ms" << std::endl;
-    }
-    std::cout << "////////////////////////////////////////////////////////////////" << std::endl;
+	EntityActionManagerComponent managerComponent1;
+	EntityActionManagerComponent managerComponent2;
 
+	managerComponent1 . AddObject ( std::make_shared <PrivateEntityAction> ( e1, 0 ) );
+	managerComponent1 . AddObject ( std::make_shared <PrivateEntityAction> ( e1, 1 ) );
+	managerComponent1 . AddObject ( std::make_shared <PublicEntityAction> ( e1, 2 ) );
 
+	managerComponent2 . AddObject ( std::make_shared <PrivateEntityAction> ( e2, 3 ) );
+	managerComponent2 . AddObject ( std::make_shared <PublicEntityAction> ( e2, 4 ) );
 
+	ecs . AddComponent <EntityActionManagerComponent> ( e1, managerComponent1 );
+	ecs . AddComponent <EntityActionManagerComponent> ( e2, managerComponent2 );
 
-
-
-
+	std::cout << "Created 2 entities with sets of components 1:{Private Private Public} 2:{Private Public}" << std::endl;
 }
 
-int main( int argc, char ** argv )
-
+void RunSystems ( ECS & ecs )
 {
-    int nOfEntities = 10;
+	std::cout << "--- Running systems" << std::endl;
+	std::cout << "- Running EntityActionSystem" << std::endl;
+	ecs . RunSystem <EntityActionSystem> ();
+	std::cout << "Running EntityActionSystemSwitch (switches entity actions visibility)" << std::endl;
+	ecs . RunSystem <EntityActionSystemSwitcher> ();
+	std::cout << "- Running EntityActionSystem after switching visibility" << std::endl;
+	ecs . RunSystem <EntityActionSystem> ();
+	std::cout << "Running EntityActionSystemComponentRemover (will remove all private actions)" << std::endl;
+	ecs . RunSystem <EntityActionSystemComponentRemover> ();
+	std::cout << "- Running EntityActionSystem after removing all private actions" << std::endl;
+	ecs . RunSystem <EntityActionSystem> ();
+	std::cout << "Running EntityActionSystemSwitch again (switches entity actions visibility)" << std::endl;
+	ecs . RunSystem <EntityActionSystemSwitcher> ();
+	std::cout << "- Running EntityActionSystem" << std::endl;
+	ecs . RunSystem <EntityActionSystem> ();
 
-    if ( argc > 1 )
-    {
-        nOfEntities = std::stoi ( std::string ( argv[1] ) );
-    }
-    TestPackedArray();
-    TestECS ( nOfEntities );
+	return;
+}
 
+int main ()
+{
+	std::cout << "------ Entity Component System example ------" << std::endl;
 
-/*
+	ECS ecs;
 
-    Entity<EntityAction> e1 ( 0 );
+	RegisterTypes ( ecs );
+	FillEcsData ( ecs );
+	RunSystems ( ecs );
 
-    EntityAction ea1 ( &e1 );
-    EntityAction ea2 ( &e1 );
-    EntityAction ea3 ( &e1 );
-    EntityAction ea4 ( &e1 );
+	std::cout << "Exiting." << std::endl;
 
-
-    ea1.SetIsVisible( true );
-    ea2.SetIsVisible( false );
-    ea3.SetIsVisible( true );
-    ea4.SetIsVisible( true );
-
-    auto & ObjectManager = static_cast <EntityActionManager&> ( e1.GetObjectManager() );
-    auto VisibleObjects = ObjectManager . GetAllVisibleActions();
-    assert ( VisibleObjects.size() == 3 );
-
-    ea1.OnRemoved();
-    VisibleObjects = ObjectManager . GetAllVisibleActions();
-    assert ( VisibleObjects.size() == 2 );
-    ea3.SetIsVisible( false );
-    VisibleObjects = ObjectManager . GetAllVisibleActions();
-    assert ( VisibleObjects.size() == 1 );
-*/
-
-
-    return 0;
-
+	return 0;
 }

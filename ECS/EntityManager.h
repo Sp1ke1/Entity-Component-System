@@ -30,14 +30,6 @@ public:
 		m_Entities . Clear ();
 	}
 
-	bool GetEntityHasComponent ( EntityHandle handle, ComponentType componentType )
-	{
-		auto obj = GetEntityChecked ( handle );
-		if ( ! obj . has_value () )
-			return false;
-		return obj . value () . get () . GetHasComponent ( handle );
-	}
-
 	bool GetIsValidEntityHandle ( EntityHandle entityHandle ) const
 	{
 		return m_Entities . GetIsValidHandle ( entityHandle );
@@ -56,6 +48,7 @@ public:
 	{
 		return m_Entities . RemoveObjectChecked ( entityHandle );
 	}
+
 	/* End EntityManager safe interface */
 
 private:

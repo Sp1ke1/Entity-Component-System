@@ -89,10 +89,9 @@ public:
 	template <typename T>
 	bool RegisterComponentChecked ()
 	{
-		const auto ComponentType = GetComponentType <T> ();
-		if ( m_Components . count ( ComponentType ) == 0 )
+		if ( GetIsComponentRegistered <T> () )
 			return false;
-		m_Components[ ComponentType ] = std::make_shared <ObjectManager <T>> ();
+		RegisterComponent <T>();
 		return true;
 	}
 

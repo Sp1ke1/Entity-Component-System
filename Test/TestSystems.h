@@ -1,6 +1,6 @@
 #include "System.h"
 #include "ECS.h"
-#include "Components/ExampleComponents.h"
+#include "TestComponents.h"
 
 class DamageSystem : public System
 {

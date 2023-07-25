@@ -7,7 +7,7 @@
 struct Vector
 {
 	Vector ( float x, float y, float z )
-			: X ( x ), Y ( x ), Z ( z )
+			: X ( x ), Y ( y ), Z ( z )
 	{};
 
 	Vector operator * ( float rhs ) const
@@ -19,7 +19,7 @@ struct Vector
 	const Vector & operator += ( const Vector & rhs )
 	{
 		X += rhs . X;
-		Y == rhs . Y;
+		Y += rhs . Y;
 		Z += rhs . Z;
 		return * this;
 	}
@@ -56,13 +56,13 @@ struct HPComponent : public ComponentBase
 	{
 		HP -= damage;
 		if ( HP <= 0 ) {
-			// std::cout << "Entity: " << GetOwner() << " Received fatal damage " << damage << std::endl;
+			std::cout << "Entity: " << GetOwner() << " Received fatal damage " << damage << std::endl;
 			HP = 0;
 			IsDead = true;
 			return;
 		}
 
-		// std::cout << "Entity: " << GetOwner() << " Received damage: " << damage << " Current HP: " << HP << std::endl;
+		std::cout << "Entity: " << GetOwner() << " Received damage: " << damage << " Current HP: " << HP << std::endl;
 	}
 
 	int HP = 100;
@@ -84,7 +84,7 @@ struct DamageComponent : public ComponentBase
 			return;
 		}
 
-		// std::cout << "Entity: " << GetOwner() << " Attacking entity: " << other.GetOwner() << " with damage: " << Damage << std::endl;
+		std::cout << "Entity: " << GetOwner() << " Attacking entity: " << other.GetOwner() << " with damage: " << Damage << std::endl;
 		other . ReceiveDamage ( Damage );
 	}
 
