@@ -6,7 +6,7 @@
 #include <random>
 
 #ifdef ECS_RELEASE
-#error Tests are not supported in Release build configuration. Please use Debug configuration.
+#error Tests are not supported in Release build configuration because of the asserts optimization away. Please use Debug configuration.
 #endif
 
 
