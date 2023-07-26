@@ -6,7 +6,7 @@
 #include <random>
 
 #ifdef ECS_RELEASE
-#error Tests are not supported in release build configuration
+#error Tests are not supported in Release build configuration. Please use Debug configuration.
 #endif
 
 
@@ -226,7 +226,7 @@ void TestECS ()
 
 }
 
-int main ( int argc, char ** argv )
+int main ()
 {
 
 	std::cout << "------- Starting testing packed array ------" << std::endl;

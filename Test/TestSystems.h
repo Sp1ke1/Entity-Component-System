@@ -56,7 +56,7 @@ class RenderSystem : public System
 {
 public:
 
-    virtual void Run ( ECS & ecs ) override
+    virtual void Run ( ECS & ) override
     {
     }
 };

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.20)
 project(ECS_Test)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -49,5 +49,5 @@ target_compile_options ( example PRIVATE ${COMPILER_FLAGS} )
 
 add_executable(tests ${TEST_SOURCE} ${CONTAINER_SOURCE} ${ECS_SOURCE} )
 
-target_compile_options ( example PRIVATE ${COMPILER_FLAGS} )
+target_compile_options ( tests PRIVATE ${COMPILER_FLAGS} )
 
