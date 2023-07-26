@@ -4,6 +4,7 @@
 #include "Entity.h"
 #include <algorithm>
 
+// Forward declaration for ECS to include it in derived system classes and be able to manipulate with the system during run invoke
 class ECS;
 
 /**
@@ -31,14 +32,14 @@ public:
 
     /**
      * @brief Run the system for processing entities.
-     * @param e The ECS (Entity Component System) instance used for processing.
+     * @param ecs The ECS (Entity Component System) instance used for processing.
      *
      * This pure virtual method is to be implemented by derived classes.
      * It defines the behavior of the system for processing entities that match the system's signature.
      *
      * @note The derived class must override this method to provide the implementation for processing entities.
      */
-    virtual void Run ( ECS & e ) = 0;
+    virtual void Run ( ECS & ecs ) = 0;
 
     /**
      * @brief Add an entity to the system.

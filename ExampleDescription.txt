@@ -1,0 +1,18 @@
+This example demonstrates the basic API of the Entity Component System. 
+It includes registering components and systems, creating an entity, adding and removing components, and launching systems. 
+
+1. First, a component of type EntityActionManagerComponent (child of ObjectManager) is registered. 
+Then the EntityActionSystem, EntityActionSystemSwitcher and EntityActionSystemComponentRemover.h systems are registered.
+
+- EntityActionSystem goes through all the entities of interest and gets EntityActionComponentManager from them. 
+  Then it gets all visible EntityActions from it and calls virtual Action() on them. 
+
+- EntityActionSystemSwitcher reverses the visibility of all EntityActions
+
+- EntityActionSystemComponentRemover removes all EntityActions of type PrivateEntityAction 
+
+2. 2 entities are created. An EntityActionManagerComponent is added to each of them. 
+   Different number of EntityActions of different types (PrivateEntityAction and PublicEntityAction) are added to each of these components. 
+
+3. The systems are launched. During launches, the visibility of components and their number are changed. All actions are written to the console. 
+

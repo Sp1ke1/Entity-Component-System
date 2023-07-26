@@ -10,9 +10,11 @@ include_directories(${PROJECT_SOURCE_DIR}/PackedArray)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     set(COMPILER_FLAGS -g -Wall -pedantic -Wextra)
+    add_compile_definitions( ECS_DEBUG )
 endif ()
 if (CMAKE_BUILD_TYPE MATCHES Release)
-    set(COMPILER_FLAGS -O2)
+    set(COMPILER_FLAGS -g -O2 )
+    add_compile_definitions( ECS_RELEASE )
 endif ()
 
 set (ECS_SOURCE ECS/ComponentBase.h
@@ -46,3 +48,6 @@ add_executable(example ${EXAMPLE_SOURCE} ${CONTAINER_SOURCE} ${ECS_SOURCE} )
 target_compile_options ( example PRIVATE ${COMPILER_FLAGS} )
 
 add_executable(tests ${TEST_SOURCE} ${CONTAINER_SOURCE} ${ECS_SOURCE} )
+
+target_compile_options ( example PRIVATE ${COMPILER_FLAGS} )
+

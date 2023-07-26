@@ -12,10 +12,13 @@ typedef std::size_t ComponentType;
 typedef std::size_t SystemType;
 
 
+/**
+ * @brief Struct representing information about a component attached to an entity.
+ */
 struct ComponentInfo
 {
-	ComponentType Type;
-	ComponentHandle Handle;
+	ComponentType Type; /** < The type identifier of the component. */
+	ComponentHandle Handle; /** < The handle of the component within its respective ObjectManager. */
 
 	bool operator < ( const ComponentInfo & rhs ) const
 	{ return Type < rhs . Type; };
