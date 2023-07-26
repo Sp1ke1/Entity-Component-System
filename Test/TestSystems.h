@@ -5,8 +5,6 @@
 class DamageSystem : public System
 {
 public:
-	DamageSystem ( Signature && s ) : System ( std::move ( s ) )
-	{};
 
 	DamageSystem () = default;
 
@@ -41,8 +39,6 @@ public:
 class MovementSystem : public System
 {
 public:
-	MovementSystem ( Signature && s ) : System ( std::move ( s ) )
-	{};
 
 	MovementSystem () = default;
 

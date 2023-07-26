@@ -1,6 +1,8 @@
 #pragma once
 
 #include "cstdint"
+#define NULL_HANDLE (-1ULL)
+
 
 typedef std::size_t ObjectHandle;
 typedef ObjectHandle EntityHandle;
